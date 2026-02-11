@@ -1,0 +1,1 @@
+Simulador de créditos desarrollado en JavaScript que permite calcular cuotas, intereses y montos totales según distintos planes de financiación. Utiliza programación orientada a objetos, funciones puras, manipulación del DOM y almacenamiento en localStorage para guardar el historial.
