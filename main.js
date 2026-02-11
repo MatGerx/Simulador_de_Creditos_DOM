@@ -1,164 +1,163 @@
-   
-     //PLANES DISPONIBLES (ARRAY DE OBJETOS)
-    const planes = [
-    { cuotas: 3, interesMensual: 0.05 },
-    { cuotas: 6, interesMensual: 0.08 },
-    { cuotas: 12, interesMensual: 0.12 },
-    ];
-   
-   
-   //DEFINO LAS FUNCIONES  
-     //Muestra los planes disponibles en consola
-    function mostrarPlanesDisponibles(listaPlanes) {
-    console.log("📌 Planes disponibles:");
-    for (let i = 0; i < listaPlanes.length; i++) {
-        console.log(
-        `- Opción ${i + 1}: ${listaPlanes[i].cuotas} cuotas | Interés mensual: ${(listaPlanes[i].interesMensual * 100).toFixed(2)}%`
-        );
-    }
-    }
-    //valida si numero ingresado por el usuario 
-    function pedirNumeroPositivo(mensaje) {
+// ==============================
+// CLASES / OBJETOS DEL DOMINIO
+// ==============================
+class Plan {
+  constructor(cuotas, interesMensual) {
+    this.cuotas = cuotas;
+    this.interesMensual = interesMensual;
+  }
 
-        //muestro mensaje 
-        let ingreso = prompt(mensaje);
+  interesMensualPorcentaje() {
+    return (this.interesMensual * 100).toFixed(2);
+  }
+}
 
-        // mientras no cancele y el valor sea inválido
-        while (ingreso !== null) {
-            //lo casteo
-            const numero = Number(ingreso);
+// ==============================
+// PLANES (ARRAY DE OBJETOS)
+// ==============================
+const planes = [
+  new Plan(3, 0.05),
+  new Plan(6, 0.08),
+  new Plan(12, 0.12),s
+];
 
-            if (Number.isFinite(numero) && numero > 0) {
-            return numero; // válido → salgo
-            }
+// ==============================
+// FUNCIONES PURAS (NO DOM)
+// ==============================
+function calcularCuota(monto, plan) {
+  const interesTotal = monto * plan.interesMensual * plan.cuotas;
+  const total = monto + interesTotal;
+  const cuota = total / plan.cuotas;
 
-            alert("⚠️ Tenés que ingresar un número válido mayor a 0.");
-            ingreso = prompt(mensaje); // vuelvo a pedir
-        }
+  return { total, cuota, interesTotal };
+}
 
-        // si el usuario canceló
-        return null;
-    }
+function formatoDinero(valor) {
+  return `$ ${valor.toFixed(2)}`;
+}
 
-    //muestra los planes disponibles en el array y valida si hay un ingreso invalido 
-    function elegirPlan(listaPlanes) {
-    let opcion = null;
+// ==============================
+// STORAGE
+// ==============================
+function guardarEnHistorial(simulacion) {
+  const historial = JSON.parse(localStorage.getItem("historial")) || [];
+  historial.push(simulacion);
+  localStorage.setItem("historial", JSON.stringify(historial));
+}
 
-    while (opcion === null) {
-        let mensaje = "Elegí un plan:\n";
+function obtenerHistorial() {
+  return JSON.parse(localStorage.getItem("historial")) || [];
+}
 
-        //el for recorre el array y va acumulando en la variable mensaje, los pares clave-valor, controlados con un salto de linea 
-        for (let i = 0; i < listaPlanes.length; i++) {
-        const plan = listaPlanes[i];
-        mensaje += `${i + 1}) ${plan.cuotas} cuotas - ${(plan.interesMensual * 100).toFixed(2)}% mensual\n`;
+// ==============================
+// RENDER DOM
+// ==============================
+function renderPlanes() {
+  const ul = document.getElementById("listaPlanes");
+  const select = document.getElementById("selectPlan");
 
-        }
+  ul.innerHTML = "";
 
-        const ingreso = prompt(mensaje);
+  // Placeholder correcto (evita que "value=''" se convierta en 0)
+  select.innerHTML = "<option value='' selected disabled>Seleccioná un plan</option>";
 
+  planes.forEach((plan, index) => {
+    // Lista visible en la sección "Planes disponibles"
+    const li = document.createElement("li");
+    li.textContent = `${plan.cuotas} cuotas - ${plan.interesMensualPorcentaje()}% mensual`;
+    ul.appendChild(li);
 
-        //si el usuario toca cancelar cuando esta elegiendo los planes, el codigo de abajo cancela la simulacion
-        if (ingreso === null) return null;
+    // Opciones del select
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${plan.cuotas} cuotas - ${plan.interesMensualPorcentaje()}%`;
+    select.appendChild(option);
+  });
+}
 
-        const numero = Number(ingreso);
+function renderResultado(resultado, monto, plan) {
+  const salida = document.getElementById("salida");
 
-        if (!Number.isInteger(numero) || numero < 1 || numero > listaPlanes.length) {
-        alert("⚠️ Opción inválida. Elegí un número de la lista.");
-        } else {
-        opcion = numero;
-        }
-    }
+  salida.innerHTML = `
+    <p class="ok">Resultado de la simulación</p>
+    <p>Monto: ${formatoDinero(monto)}</p>
+    <p>Plan: ${plan.cuotas} cuotas</p>
+    <p>Interés mensual: ${plan.interesMensualPorcentaje()}%</p>
+    <p>Interés total: ${formatoDinero(resultado.interesTotal)}</p>
+    <p>Total a pagar: ${formatoDinero(resultado.total)}</p>
+    <p>Cuota mensual: ${formatoDinero(resultado.cuota)}</p>
+  `;
+}
 
-    return listaPlanes[opcion - 1];
-    }
+function renderHistorial() {
+  const ul = document.getElementById("historial");
+  ul.innerHTML = "";
 
-    /** Calcula cuota mensual aproximada (simple) */
-    function calcularCuota(monto, plan) {
-    const interesTotal = monto * plan.interesMensual * plan.cuotas;
-    const total = monto + interesTotal;
-    const cuota = total / plan.cuotas;
+  const historial = obtenerHistorial();
 
-    return {total,cuota,interesTotal,};
-    }
+  if (historial.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "No hay simulaciones guardadas todavía.";
+    ul.appendChild(li);
+    return;
+  }
 
-    /** Formatea número a $ con 2 decimales */
-    function formatoDinero(valor) {
-    return `$ ${valor.toFixed(2)}`;
-    }   
+  historial.forEach((item) => {
+    const li = document.createElement("li");
 
+    // item.plan viene serializado (objeto plano). Igual tiene cuotas/interesMensual.
+    const cuotas = item.plan.cuotas;
+    const interesPorc = (item.plan.interesMensual * 100).toFixed(2);
 
+    li.textContent = `${formatoDinero(item.monto)} - ${cuotas} cuotas (${interesPorc}% mensual)`;
+    ul.appendChild(li);
+  });
+}
 
+// ==============================
+// EVENTOS
+// ==============================
+document.getElementById("formSimulador").addEventListener("submit", (e) => {
+  e.preventDefault();
 
+  const montoInput = document.getElementById("inputMonto");
+  const planSelect = document.getElementById("selectPlan");
 
+  const monto = Number(montoInput.value);
 
+  // Validación de monto
+  if (!Number.isFinite(monto) || monto <= 0) return;
 
-    //INICIA EL PROGRAMA CON LOS OUTPUTS 
-    function iniciarSimulador() {
-    alert("👋 Bienvenido al Simulador de Créditos");
+  // Validación de plan (si está vacío, no seguimos)
+  if (planSelect.value === "") return;
 
-    //caso true el programa continua 
-    const quiere = confirm("¿Querés simular un crédito ahora?");
-    if (!quiere) {
-        alert("Listo. Cuando quieras, recargá la página 😉");
-        console.log("El usuario decidió no iniciar el simulador.");
-        return;
-        }
+  const planIndex = Number(planSelect.value);
+  const planElegido = planes[planIndex];
 
-    //se pide al usuario ingresar un monto llamando a la funcion
-    const monto = pedirNumeroPositivo("Ingresá el monto del crédito (ej: 100000):");
-    if (monto === null) {
-        alert("Simulación cancelada.");
-        console.log("Simulación cancelada en el ingreso del monto.");
-        return;
+  if (!planElegido) return; // seguridad extra
 
-    }
-    //LLAMO A LA FUNCION, LE PASO POR ARGUMENTO LOS PLANES DEFINIDO EN EL ARRAY DE OBJETOS 
-    mostrarPlanesDisponibles(planes);
+  const resultado = calcularCuota(monto, planElegido);
 
+  // Objeto simulación (se guarda completo)
+  const simulacion = { monto, plan: planElegido, resultado };
+  guardarEnHistorial(simulacion);
 
-    //el usario elegi un plan, llamamos al funcion elegirplanes()
-        const planElegido = elegirPlan(planes);
-    if (planElegido === null) {
-        alert("Simulación cancelada.");
-        console.log("Simulación cancelada en la elección del plan.");
-        return;
-    }
+  // Salidas en DOM
+  renderResultado(resultado, monto, planElegido);
+  renderHistorial();
+});
 
-        const resultado = calcularCuota(monto, planElegido);
+document.getElementById("btnLimpiar").addEventListener("click", () => {
+  document.getElementById("formSimulador").reset();
+});
 
-    // pasamos a la funcion formatoDinero() para dejarlo en 2 decimales y mostramos por pantalla 
-    alert(
-        `✅ Resultado de tu simulación:\n\n` +
-        `Monto: ${formatoDinero(monto)}\n` +
-        `Plan: ${planElegido.cuotas} cuotas\n` +
-        `Interés mensual: ${(planElegido.interesMensual * 100).toFixed(2)}%\n\n` +
-        `Interés total aprox: ${formatoDinero(resultado.interesTotal)}\n` +
-        `Total a pagar aprox: ${formatoDinero(resultado.total)}\n` +
-        `Cuota mensual aprox: ${formatoDinero(resultado.cuota)}`
-    );
+document.getElementById("btnBorrarHistorial").addEventListener("click", () => {
+  localStorage.removeItem("historial");
+  renderHistorial();
+});
 
-    //lo mostramos por la consola 
-    console.log("Monto:", monto, "Plan:", planElegido, "Cuota:", resultado.cuota, "Total:", resultado.total, "Interés:", resultado.interesTotal);
-
-
-
-    //volvemos a preguntar si el usuario quiere hace una nueva simulacion
-
-    const otra = confirm("¿Querés hacer otra simulación?");
-    if (otra) {
-        iniciarSimulador(); // reutiliza funciones, sin DOM
-    } else {
-        alert("Gracias por usar el simulador 🙌");
-        console.log("El usuario finalizó el simulador.");
-    }
-
-
-
-    }
-
-
-
-
-    //llamado a la funcion para iniciar el programa 
-
-    iniciarSimulador();
+// ==============================
+// INIT
+// ==============================
+renderPlanes();
+renderHistorial();

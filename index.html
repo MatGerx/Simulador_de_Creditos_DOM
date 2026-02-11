@@ -3,9 +3,62 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simulador de Créditos - Pre Entrega</title>
+    <title>Simulador de Créditos</title>
+
+    <!-- CSS externo -->
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <script src="./main.js" defer></script>
+    <h1>Simulador de Créditos</h1>
+    <p class="muted">Ingresá un monto, elegí un plan y obtené el resultado.</p>
+
+    <section class="card">
+      <h2>Ingreso</h2>
+
+      <form id="formSimulador">
+        <div class="row">
+          <div>
+            <label for="inputMonto">Monto del crédito</label>
+            <input
+              id="inputMonto"
+              type="number"
+              min="1"
+              placeholder="Ej: 100000"
+              required
+            />
+            <p id="errorMonto" class="error"></p>
+          </div>
+
+          <div>
+            <label for="selectPlan">Plan</label>
+            <select id="selectPlan" required></select>
+            <p id="errorPlan" class="error"></p>
+          </div>
+        </div>
+
+        <div class="row actions">
+          <button type="submit">Simular</button>
+          <button type="button" id="btnLimpiar">Limpiar</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Planes disponibles</h2>
+      <ul id="listaPlanes"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Resultado</h2>
+      <div id="salida" class="muted">Todavía no hay simulaciones.</div>
+    </section>
+
+    <section class="card">
+      <h2>Historial</h2>
+      <button id="btnBorrarHistorial">Borrar historial</button>
+      <ul id="historial"></ul>
+    </section>
+
+    <script src="main.js"></script>
   </body>
 </html>
