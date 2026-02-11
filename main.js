@@ -18,7 +18,7 @@ class Plan {
 const planes = [
   new Plan(3, 0.05),
   new Plan(6, 0.08),
-  new Plan(12, 0.12),s
+  new Plan(12, 0.12),
 ];
 
 // ==============================
